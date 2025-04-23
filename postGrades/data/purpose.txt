@@ -1,0 +1,4 @@
+The current directory data purpose is to temporarily store
+uploaded grades files. Most of the time it will be empty.
+This file right here, only purpose, is to make data not empty
+so it can get pushed and hence fetched in github.

@@ -20,7 +20,7 @@ const CourseGradesSchema = new mongoose.Schema({
   finalSubmissionDate: Date,
   status: {
     type: String,
-    enum: ["initial", "finalized"],
+    enum: ["initial", "final"],
     default: "initial",
   },
   studentGrades: [StudentGradeSchema],
@@ -28,7 +28,7 @@ const CourseGradesSchema = new mongoose.Schema({
 
 // Compound index for efficient querying
 CourseGradesSchema.index(
-  { instructorId: 1, courseName: 1, term: 1 },
+  { instructorId: 1, courseName: 1, term: 1, status: 1 },
   { unique: true }
 );
 

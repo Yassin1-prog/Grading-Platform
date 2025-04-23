@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const postInitialRoutes = require("./routes/route");
+const postGradesRoutes = require("./routes/route");
 const { errorHandler, notFound } = require("./middleware/errorHandler");
 const dbConnection = require("./database/connection");
 
@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 
 dbConnection();
 
-app.use(postInitialRoutes);
+app.use(postGradesRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
