@@ -96,6 +96,7 @@ exports.login = async (req, res) => {
         email: user.email,
         username: user.username,
         role: user.role,
+        studentId: user.studentId,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
