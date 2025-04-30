@@ -4,12 +4,20 @@ const reviewController = require("../controllers/reviewController");
 const { verifyToken } = require("../middleware/auth");
 
 // Create a new review request
-router.post("/review-request", verifyToken, reviewController.createReviewRequest);
+router.post(
+  "/review-request",
+  verifyToken,
+  reviewController.createReviewRequest
+);
 
 // Get all review requests for current user
-router.get("/my-review-requests", verifyToken, reviewController.getMyReviewRequests);
+router.get(
+  "/my-review-requests",
+  verifyToken,
+  reviewController.getMyReviewRequests
+);
 
-// Get specific review request
+// Get specific review request for a course
 router.get("/review-request", verifyToken, reviewController.getReviewRequest);
 
 module.exports = router;
