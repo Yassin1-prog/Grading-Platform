@@ -360,20 +360,6 @@ const calculateGradeDistribution = (course) => {
   };
 };
 
-// Generate grade distributions for each course
-const courseDistributions = courseGrades.map((course) => {
-  const { totalGradeDistribution, questionDistributions } =
-    calculateGradeDistribution(course);
-
-  return {
-    courseId: course._id,
-    courseName: course.courseName,
-    term: course.term,
-    totalGradeDistribution,
-    questionDistributions,
-  };
-});
-
 // Helper function to get courses for a specific student
 const getStudentCourses = (studentId) => {
   const studentCoursesData = [];
@@ -388,17 +374,40 @@ const getStudentCourses = (studentId) => {
         courseId: course._id,
         courseName: course.courseName,
         term: course.term,
-        initialSubmissionDate: course.initialSubmissionDate,
-        finalSubmissionDate: course.finalSubmissionDate,
         status: course.status,
         totalGrade: studentGrade.totalGrade,
         gradeByQuestion: studentGrade.gradeByQuestion,
-        reviewRequest: studentGrade.reviewRequests,
       });
     }
   });
 
   return studentCoursesData;
+};
+
+// Helper function to get review requests for a student
+const getStudentReviewRequests = (studentId) => {
+  const reviewRequests = [];
+
+  courseGrades.forEach((course) => {
+    const studentGrade = course.studentGrades.find((grade) => {
+      // Check if the student has a review request
+      grade.studentId == studentId;
+    });
+
+    if (studentGrade && studentGrade.reviewRequests) {
+      reviewRequests.push({
+        courseId: course._id,
+        courseName: course.courseName,
+        term: course.term,
+        totalGrade: studentGrade.totalGrade,
+        comment: studentGrade.reviewRequests.comment,
+        response: studentGrade.reviewRequests.response,
+        requestStatus: studentGrade.reviewRequests.status,
+      });
+    }
+  });
+
+  return reviewRequests;
 };
 
 // Helper function to get review requests for an instructor
@@ -408,7 +417,11 @@ const getInstructorReviewRequests = (instructorId) => {
   courseGrades.forEach((course) => {
     if (course.instructorId === instructorId) {
       course.studentGrades.forEach((grade) => {
-        if (grade.reviewRequests) {
+        if (
+          grade.reviewRequests &&
+          grade.reviewRequests.status == "pending" &&
+          course.status == true
+        ) {
           const student = users.find(
             (user) => user.studentId === grade.studentId
           );
@@ -436,7 +449,6 @@ const getInstructorReviewRequests = (instructorId) => {
 export const mockData = {
   users,
   courseGrades,
-  courseDistributions,
 
   // Helper functions that would mimic API endpoints
   getCurrentUser: (username) =>
@@ -448,52 +460,11 @@ export const mockData = {
       term: course.term,
       initialSubmissionDate: course.initialSubmissionDate,
       finalSubmissionDate: course.finalSubmissionDate,
-      status: course.status,
+      gradeDistribution: calculateGradeDistribution(course),
     })),
-  getCourseById: (courseId) => {
-    const course = courseGrades.find((course) => course._id === courseId);
-    if (!course) return null;
-
-    const { totalGradeDistribution, questionDistributions } =
-      calculateGradeDistribution(course);
-
-    return {
-      _id: course._id,
-      courseName: course.courseName,
-      term: course.term,
-      initialSubmissionDate: course.initialSubmissionDate,
-      finalSubmissionDate: course.finalSubmissionDate,
-      status: course.status,
-      totalGradeDistribution,
-      questionDistributions,
-    };
-  },
   getStudentCourses,
-  getStudentGradeForCourse: (studentId, courseId) => {
-    const course = courseGrades.find((course) => course._id === courseId);
-    if (!course) return null;
-
-    const studentGrade = course.studentGrades.find(
-      (grade) => grade.studentId === studentId
-    );
-    if (!studentGrade) return null;
-
-    const { totalGradeDistribution, questionDistributions } =
-      calculateGradeDistribution(course);
-
-    return {
-      courseId: course._id,
-      courseName: course.courseName,
-      term: course.term,
-      status: course.status,
-      totalGrade: studentGrade.totalGrade,
-      gradeByQuestion: studentGrade.gradeByQuestion,
-      reviewRequest: studentGrade.reviewRequests,
-      totalGradeDistribution,
-      questionDistributions,
-    };
-  },
   getInstructorReviewRequests,
+  getStudentReviewRequests,
   submitReviewRequest: (studentId, courseId, comment) => {
     // In a real app, this would be an API POST request
     console.log(
@@ -516,6 +487,8 @@ export const mockData = {
     return { success: true };
   },
 };
+
+export default mockData;
 
 // Example usage in frontend components:
 /*
