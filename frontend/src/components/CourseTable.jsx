@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const CourseTable = ({ courses, onSelectCourse }) => {
   const [sortField, setSortField] = useState("courseName");
   const [sortDirection, setSortDirection] = useState("asc");
   const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate();
 
   const handleSort = (field) => {
     if (sortField === field) {
