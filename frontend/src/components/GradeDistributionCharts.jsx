@@ -7,6 +7,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { v4 as uuidv4 } from "uuid"; // Importing uuid for unique keys
+import LazyLoadedQuestionChart from "./LazyLoadedQuestionChart";
 
 const GradeDistributionCharts = ({
   gradeDistribution,
@@ -66,13 +68,9 @@ const GradeDistributionCharts = ({
               <Bar
                 dataKey="count"
                 fill="#6366F1"
+                isAnimationActive={false}
                 radius={[4, 4, 0, 0]}
                 barSize={30}
-                // Highlight the student's grade if available
-                {...(studentGrade && {
-                  fill: (entry) =>
-                    entry.isStudentGrade ? "#10B981" : "#6366F1",
-                })}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -81,30 +79,15 @@ const GradeDistributionCharts = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {questionGradeData.map((question) => (
-          <div key={question.questionNumber} className="card">
+          <div key={uuidv4()} className="card">
             <h3 className="text-sm font-medium mb-2">
               Question {question.questionNumber}
             </h3>
             <div className="h-40">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={question.data}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="grade" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="count"
-                    fill="#6366F1"
-                    radius={[4, 4, 0, 0]}
-                    barSize={20}
-                    // Highlight the student's grade if available
-                    {...(studentGrade && {
-                      fill: (entry) =>
-                        entry.isStudentGrade ? "#10B981" : "#6366F1",
-                    })}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <LazyLoadedQuestionChart
+                questionData={question}
+                CustomTooltipComponent={CustomTooltip}
+              />
             </div>
           </div>
         ))}
