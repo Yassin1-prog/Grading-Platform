@@ -1,16 +1,12 @@
-"use client";
-
-import { createContext, useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { AuthContext } from "./useAuth";
 import { mockData } from "../mockData";
-
-const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is stored in localStorage
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
@@ -19,7 +15,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (username, password) => {
-    // In a real app, this would be an API call
     const user = mockData.getCurrentUser(username);
     if (user && user.password === password) {
       setCurrentUser(user);
@@ -48,8 +43,4 @@ export const AuthProvider = ({ children }) => {
       {!loading && children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  return useContext(AuthContext);
 };

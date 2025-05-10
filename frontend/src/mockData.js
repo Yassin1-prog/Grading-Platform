@@ -462,6 +462,16 @@ export const mockData = {
       finalSubmissionDate: course.finalSubmissionDate,
       gradeDistribution: calculateGradeDistribution(course),
     })),
+  getCourseById: (courseId) => {
+    const course = courseGrades.find((c) => c._id === courseId);
+    if (course) {
+      return {
+        ...course,
+        gradeDistribution: calculateGradeDistribution(course),
+      };
+    }
+    return null;
+  },
   getStudentCourses,
   getInstructorReviewRequests,
   getStudentReviewRequests,

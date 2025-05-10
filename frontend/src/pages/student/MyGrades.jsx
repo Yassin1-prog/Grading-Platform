@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { mockData } from "../../mockData";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import GradeDistributionCharts from "../../components/GradeDistributionCharts";
 
 const MyGrades = () => {
