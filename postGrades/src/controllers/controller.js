@@ -19,6 +19,19 @@ const processInitialGradesFile = async (req, res) => {
       });
     }
 
+    // Parse Excel file using SheetJS
+    let workbook;
+    try {
+      workbook = xlsx.readFile(req.file.path);
+    } catch (error) {
+      return res.status(400).json({ error: "Invalid Excel file format" });
+    } finally {
+      // Clean up the uploaded file
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error("Error deleting file:", err);
+      });
+    }
+
     // First check if final grades exist
     const finalGrades = await CourseGrades.findOne({
       instructorId: req.user.id,
@@ -30,19 +43,6 @@ const processInitialGradesFile = async (req, res) => {
     if (finalGrades) {
       return res.status(400).json({
         error: "Initial grades cannot be submitted after final grades",
-      });
-    }
-
-    // Parse Excel file using SheetJS
-    let workbook;
-    try {
-      workbook = xlsx.readFile(req.file.path);
-    } catch (error) {
-      return res.status(400).json({ error: "Invalid Excel file format" });
-    } finally {
-      // Clean up the uploaded file
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error("Error deleting file:", err);
       });
     }
 
@@ -98,7 +98,7 @@ const processInitialGradesFile = async (req, res) => {
       courseName,
       term,
       initialSubmissionDate: new Date(),
-      status: "initial",
+      status: "open",
       studentGrades,
     };
 
@@ -142,20 +142,6 @@ const processFinalGradesFile = async (req, res) => {
       });
     }
 
-    // First check if initial grades exist
-    const initialGrades = await CourseGrades.findOne({
-      instructorId: req.user.id,
-      courseName,
-      term,
-      status: "initial",
-    });
-
-    if (!initialGrades) {
-      return res.status(400).json({
-        error: "Initial grades must be submitted before final grades",
-      });
-    }
-
     // Parse Excel file using SheetJS
     let workbook;
     try {
@@ -166,6 +152,20 @@ const processFinalGradesFile = async (req, res) => {
       // Clean up the uploaded file
       fs.unlink(req.file.path, (err) => {
         if (err) console.error("Error deleting file:", err);
+      });
+    }
+
+    // First check if initial grades exist
+    const initialGrades = await CourseGrades.findOne({
+      instructorId: req.user.id,
+      courseName,
+      term,
+      status: "open",
+    });
+
+    if (!initialGrades) {
+      return res.status(400).json({
+        error: "Initial grades must be submitted before final grades",
       });
     }
 
@@ -215,7 +215,7 @@ const processFinalGradesFile = async (req, res) => {
       term,
       initialSubmissionDate: initialGrades.initialSubmissionDate,
       finalSubmissionDate: new Date(),
-      status: "final",
+      status: "closed",
       studentGrades,
     };
 
@@ -224,7 +224,7 @@ const processFinalGradesFile = async (req, res) => {
       instructorId: req.user.id,
       courseName,
       term,
-      status: "final",
+      status: "closed",
     });
 
     let result;

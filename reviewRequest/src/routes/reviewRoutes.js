@@ -17,7 +17,4 @@ router.get(
   reviewController.getMyReviewRequests
 );
 
-// Get specific review request for a course
-router.get("/review-request", verifyToken, reviewController.getReviewRequest);
-
 module.exports = router;

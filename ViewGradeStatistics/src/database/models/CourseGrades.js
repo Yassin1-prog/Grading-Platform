@@ -20,8 +20,8 @@ const CourseGradesSchema = new mongoose.Schema({
   finalSubmissionDate: Date,
   status: {
     type: String,
-    enum: ["initial", "final"],
-    default: "initial",
+    enum: ["open", "closed"],
+    default: "open",
   },
   studentGrades: [StudentGradeSchema],
 });

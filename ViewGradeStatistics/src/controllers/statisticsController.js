@@ -1,79 +1,53 @@
 const CourseGrades = require("../database/models/CourseGrades");
 
-// 🔹 Compute five-number summary: min, Q1, median, Q3, max
-const calculateFiveNumSummary = (grades) => {
-  if (!grades.length) {
-    return { min: 0, q1: 0, median: 0, q3: 0, max: 0 };
-  }
+// Helper function to calculate grade distributions for a course
+const calculateGradeDistribution = (course) => {
+  // Initialize distribution arrays
+  const totalGradeDistribution = Array(11).fill(0); // 0-10 grades
+  const questionDistributions = Array(10)
+    .fill()
+    .map(() => Array(11).fill(0)); // 10 questions, each with 0-10 grades
 
-  const sorted = grades.map(g => g.totalGrade).sort((a, b) => a - b);
-  const len = sorted.length;
+  course.studentGrades.forEach((student) => {
+    // Add to total grade distribution
+    totalGradeDistribution[student.totalGrade]++;
 
-  const getPercentile = (p) => {
-    const index = (p / 100) * (len - 1);
-    const lower = Math.floor(index);
-    const upper = Math.ceil(index);
-    const weight = index - lower;
-    return (1 - weight) * sorted[lower] + weight * sorted[upper];
-  };
-
-  return {
-    min: sorted[0],
-    q1: getPercentile(25),
-    median: getPercentile(50),
-    q3: getPercentile(75),
-    max: sorted[len - 1]
-  };
-};
-
-// 🔹 Create exact integer frequency from 0 to 10
-const calculateGradeFrequency = (grades) => {
-  const distribution = {};
-
-  for (let i = 0; i <= 10; i++) {
-    distribution[i] = 0;
-  }
-
-  grades.forEach(({ totalGrade }) => {
-    const rounded = Math.round(totalGrade);
-    if (rounded >= 0 && rounded <= 10) {
-      distribution[rounded]++;
-    }
+    // Add to question-specific distributions
+    student.gradeByQuestion.forEach((grade, index) => {
+      questionDistributions[index][grade]++;
+    });
   });
 
-  return distribution;
+  return {
+    totalGradeDistribution,
+    questionDistributions,
+  };
 };
 
 const getStatistics = async (req, res, next) => {
   try {
-    const { courseName, term } = req.query;
-    if (!courseName || !term) {
-      return res.status(400).json({ error: "courseName and term are required" });
-    }
+    const courses = await CourseGrades.find({});
 
-    const course = await CourseGrades.findOne({
-      courseName,
-      term,
-      status: "final"
+    const coursesGrades = courses.map((course) => {
+      const { totalGradeDistribution, questionDistributions } =
+        calculateGradeDistribution(course);
+      return {
+        courseName: course.courseName,
+        term: course.term,
+        inititalSubmissionDate: course.initialSubmissionDate,
+        finalSubmissionDate: course.finalSubmissionDate,
+        totalGradeDistribution,
+        questionDistributions,
+      };
     });
 
-    if (!course || !course.studentGrades?.length) {
-      return res.status(404).json({ error: "No final grades found for this course/term" });
+    if (!coursesGrades.length) {
+      return res.status(404).json({ message: "No grades found" });
     }
-
-    const grades = course.studentGrades;
-
-    const fiveNumberSummary = calculateFiveNumSummary(grades);
-    const gradeDistribution = calculateGradeFrequency(grades);
 
     res.json({
-      courseName,
-      term,
-      totalStudents: grades.length,
-      fiveNumberSummary,
-      gradeDistribution
+      grades: coursesGrades,
     });
-
   } catch (err) {
     next(err);
   }

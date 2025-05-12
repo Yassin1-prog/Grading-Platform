@@ -389,10 +389,9 @@ const getStudentReviewRequests = (studentId) => {
   const reviewRequests = [];
 
   courseGrades.forEach((course) => {
-    const studentGrade = course.studentGrades.find((grade) => {
-      // Check if the student has a review request
-      grade.studentId == studentId;
-    });
+    const studentGrade = course.studentGrades.find(
+      (grade) => grade.studentId == studentId
+    );
 
     if (studentGrade && studentGrade.reviewRequests) {
       reviewRequests.push({

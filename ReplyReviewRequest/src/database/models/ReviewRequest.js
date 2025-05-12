@@ -1,22 +1,26 @@
 const mongoose = require("mongoose");
 
-const ReviewRequestSchema = new mongoose.Schema({
-  comment: { type: String, required: true },
-  response: { type: String },  // Changed to not required since it will be added later
-  status: {
-    type: String,
-    enum: ["pending", "accepted", "rejected"],
-    default: "pending",
+const ReviewRequestSchema = new mongoose.Schema(
+  {
+    comment: { type: String, required: true },
+    response: { type: String }, // Changed to not required since it will be added later
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "pending",
+    },
   },
-});
+  { _id: false }
+);
 
 const StudentGradeSchema = new mongoose.Schema(
   {
     studentId: { type: String, required: true },
     totalGrade: { type: Number, required: true },
     gradeByQuestion: [Number],
-    reviewRequests: [ReviewRequestSchema],
-  }
+    reviewRequests: ReviewRequestSchema,
+  },
+  { _id: false }
 );
 
 const CourseGradesReviewSchema = new mongoose.Schema({
@@ -30,8 +34,8 @@ const CourseGradesReviewSchema = new mongoose.Schema({
   finalSubmissionDate: Date,
   status: {
     type: String,
-    enum: ["initial", "final"],
-    default: "initial",
+    enum: ["open", "closed"],
+    default: "open",
   },
   studentGrades: [StudentGradeSchema],
 });
@@ -43,5 +47,8 @@ CourseGradesReviewSchema.index(
 );
 
 module.exports = {
-  CourseGradesReview: mongoose.model("CourseGradesReview", CourseGradesReviewSchema),
+  CourseGradesReview: mongoose.model(
+    "CourseGradesReview",
+    CourseGradesReviewSchema
+  ),
 };

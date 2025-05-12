@@ -6,7 +6,8 @@ function validateExcelStructure(data, courseName, term, numberOfGrades) {
 
   // Check course name and term in header
   const header = data[0][0];
-  if (!header.includes(courseName) || !header.includes(term)) {
+  const period = data[3][3];
+  if (!header.includes(courseName) || !period.includes(term)) {
     return "Course name or term in file does not match provided values";
   }
 

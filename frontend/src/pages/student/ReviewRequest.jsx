@@ -30,6 +30,7 @@ const ReviewRequest = () => {
           const requests = mockData.getStudentReviewRequests(
             currentUser.studentId
           );
+
           setReviewRequests(requests);
         }
         setLoading(false);
