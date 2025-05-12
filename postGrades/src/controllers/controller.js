@@ -5,6 +5,13 @@ const { validateExcelStructure } = require("../utils/excelValidation"); // Optio
 
 const processInitialGradesFile = async (req, res) => {
   try {
+    if (req.user.role !== "instructor") {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: only instructors can reply to review requests",
+      });
+    }
+
     // Validate request
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -32,17 +39,16 @@ const processInitialGradesFile = async (req, res) => {
       });
     }
 
-    // First check if final grades exist
-    const finalGrades = await CourseGrades.findOne({
+    // First check if final/initial grades exist
+    const grades = await CourseGrades.findOne({
       instructorId: req.user.id,
       courseName,
       term,
-      status: "final",
     });
 
-    if (finalGrades) {
+    if (grades) {
       return res.status(400).json({
-        error: "Initial grades cannot be submitted after final grades",
+        error: "Initial grades cannot be submitted twice or after final grades",
       });
     }
 
@@ -128,6 +134,13 @@ const processInitialGradesFile = async (req, res) => {
 
 const processFinalGradesFile = async (req, res) => {
   try {
+    if (req.user.role !== "instructor") {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: only instructors can reply to review requests",
+      });
+    }
+
     // Validate request
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });

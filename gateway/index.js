@@ -33,6 +33,9 @@ const authenticate = (req, res, next) => {
 const users = proxy("http://localhost:8081");
 const postGrades = proxy("http://localhost:8082");
 const reviewRequests = proxy("http://localhost:8085");
+const replyReviewRequests = proxy("http://localhost:8086");
+const allCourses = proxy("http://localhost:8087");
+const personalCourses = proxy("http://localhost:8088");
 
 // Rate limiting middleware
 const limiter = rateLimit({
@@ -52,9 +55,12 @@ app.use((req, res, next) => {
 // WILL BE CHANGED LATER WHEN ALL MICROSERVICES ARE READY
 // SO THAT THERE IS ACTUALLY ROUTING AND NOT ALL REQUESTS GET SENT TO ALL SERVICES
 // (will throw an error if it doesnt match, should use next() or specify)
-app.use("/", users);
-app.use("/", postGrades);
-app.use("/", reviewRequests);
+app.use("/auth", users);
+app.use("/uploadGrades", postGrades);
+app.use("/reviewRequests", reviewRequests);
+app.use("/manageReviewRequests", replyReviewRequests);
+app.use("/allCourses", allCourses);
+app.use("/personalCourses", personalCourses);
 
 // Fallback route
 app.use((req, res) => {

@@ -100,6 +100,14 @@ exports.replyReviewRequest = async (req, res) => {
     );
     const reviewReq = studentGrade.reviewRequests;
 
+    // Check if the review request exists
+    if (reviewReq.response) {
+      return res.status(400).json({
+        success: false,
+        message: "You have arleady responsed to this review request",
+      });
+    }
+
     // Apply the instructor's response and status
     reviewReq.response = responseText;
     reviewReq.status = ["accepted", "rejected"].includes(status)
