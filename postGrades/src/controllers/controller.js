@@ -2,13 +2,14 @@ const xlsx = require("xlsx");
 const fs = require("fs");
 const CourseGrades = require("../database/models/CourseGrades"); // Adjust path as needed
 const { validateExcelStructure } = require("../utils/excelValidation"); // Optional helper
+const { publishGradeData } = require("../services/messagePublisher");
 
 const processInitialGradesFile = async (req, res) => {
   try {
     if (req.user.role !== "instructor") {
       return res.status(403).json({
         success: false,
-        message: "Forbidden: only instructors can reply to review requests",
+        message: "Forbidden: only instructors can upload grades",
       });
     }
 
@@ -39,16 +40,17 @@ const processInitialGradesFile = async (req, res) => {
       });
     }
 
-    // First check if final/initial grades exist
+    // First check if final grades exist
     const grades = await CourseGrades.findOne({
       instructorId: req.user.id,
       courseName,
       term,
+      status: "closed",
     });
 
     if (grades) {
       return res.status(400).json({
-        error: "Initial grades cannot be submitted twice or after final grades",
+        error: "Initial grades cannot be submitted after final grades",
       });
     }
 
@@ -119,6 +121,9 @@ const processInitialGradesFile = async (req, res) => {
       result = await CourseGrades.create(gradesData);
     }
 
+    // Publish to RabbitMQ for other services
+    await publishGradeData(gradesData);
+
     res.status(201).json({
       message: "Grades processed successfully",
       data: result,
@@ -137,7 +142,7 @@ const processFinalGradesFile = async (req, res) => {
     if (req.user.role !== "instructor") {
       return res.status(403).json({
         success: false,
-        message: "Forbidden: only instructors can reply to review requests",
+        message: "Forbidden: only instructors can upload grades",
       });
     }
 
@@ -255,6 +260,9 @@ const processFinalGradesFile = async (req, res) => {
     await CourseGrades.deleteOne({
       _id: initialGrades._id,
     });
+
+    // Publish to RabbitMQ for other services
+    await publishGradeData(gradesData);
 
     res.status(201).json({
       message: "Grades processed successfully",
