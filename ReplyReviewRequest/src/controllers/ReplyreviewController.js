@@ -1,4 +1,7 @@
 const { CourseGradesReview } = require("../database/models/ReviewRequest");
+const {
+  publishReviewResponse,
+} = require("../services/reviewResponsePublisher");
 
 // GET /api/reviews/instructor
 exports.getAllReviewRequestsForInstructor = async (req, res) => {
@@ -28,7 +31,11 @@ exports.getAllReviewRequestsForInstructor = async (req, res) => {
     const pending = [];
     courses.forEach((course) => {
       course.studentGrades.forEach((grade) => {
-        if (grade.reviewRequests && grade.reviewRequests.status == "pending") {
+        if (
+          grade.reviewRequests &&
+          grade.reviewRequests.status == "pending" &&
+          course.status == "open"
+        ) {
           pending.push({
             courseName: course.courseName,
             term: course.term,
@@ -115,6 +122,15 @@ exports.replyReviewRequest = async (req, res) => {
       : "accepted";
 
     await courseDoc.save();
+
+    // Publish to RabbitMQ for Review Request service
+    await publishReviewResponse({
+      courseName,
+      term,
+      studentId,
+      responseText,
+      status: reviewReq.status,
+    });
 
     // Return the saved reply, now including the studentId we pulled out
     return res.status(200).json({

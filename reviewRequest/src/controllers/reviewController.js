@@ -1,4 +1,5 @@
 const { CourseGradesReview } = require("../database/models/ReviewRequest");
+const { publishReviewRequest } = require("../services/reviewMessagePublisher");
 
 // Create a new review request
 exports.createReviewRequest = async (req, res) => {
@@ -27,6 +28,13 @@ exports.createReviewRequest = async (req, res) => {
       });
     }
 
+    if (courseGrades.status == "closed") {
+      return res.status(400).json({
+        success: false,
+        message: "The review request period is closed for this course",
+      });
+    }
+
     // Find the specific student's grades
     const studentGrade = courseGrades.studentGrades.find(
       (grade) => grade.studentId === studentId
@@ -47,6 +55,14 @@ exports.createReviewRequest = async (req, res) => {
     };
 
     await courseGrades.save();
+
+    // Publish to RabbitMQ for Reply to Review Request service
+    await publishReviewRequest({
+      courseName,
+      term,
+      studentId,
+      comment,
+    });
 
     res.status(201).json({
       success: true,

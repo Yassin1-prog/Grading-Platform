@@ -5,6 +5,7 @@ require("dotenv").config({
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost";
 const EXCHANGE_NAME = "grades_exchange";
+const REVIEW_EXCHANGE = "review_exchange";
 const QUEUE_PREFIX = process.env.QUEUE_PREFIX || "unknown_service";
 
 // Connection management with reconnection logic
@@ -31,6 +32,9 @@ const connect = async () => {
     // Set up the fanout exchange
     await channel.assertExchange(EXCHANGE_NAME, "fanout", { durable: true });
 
+    // Set up the direct exchange for review request communication
+    await channel.assertExchange(REVIEW_EXCHANGE, "direct", { durable: true });
+
     console.log("Connected to RabbitMQ successfully");
     return { connection, channel };
   } catch (error) {
@@ -44,5 +48,6 @@ module.exports = {
   getChannel: () => channel,
   getConnection: () => connection,
   EXCHANGE_NAME,
+  REVIEW_EXCHANGE,
   QUEUE_PREFIX,
 };
