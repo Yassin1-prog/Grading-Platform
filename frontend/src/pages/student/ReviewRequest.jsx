@@ -95,6 +95,10 @@ const ReviewRequest = () => {
         setSelectedCourse("");
         setSelectedTerm("");
         setComment("");
+        // Reset success message after 3 seconds
+        setTimeout(() => {
+          setSubmitSuccess(false);
+        }, 3000);
       } else {
         setError(result.message || "Failed to submit review request");
       }

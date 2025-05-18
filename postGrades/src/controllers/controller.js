@@ -3,6 +3,7 @@ const fs = require("fs");
 const CourseGrades = require("../database/models/CourseGrades"); // Adjust path as needed
 const { validateExcelStructure } = require("../utils/excelValidation"); // Optional helper
 const { publishGradeData } = require("../services/messagePublisher");
+const mongoose = require("mongoose");
 
 const processInitialGradesFile = async (req, res) => {
   try {
@@ -40,20 +41,6 @@ const processInitialGradesFile = async (req, res) => {
       });
     }
 
-    // First check if final grades exist
-    const grades = await CourseGrades.findOne({
-      instructorId: req.user.id,
-      courseName,
-      term,
-      status: "closed",
-    });
-
-    if (grades) {
-      return res.status(400).json({
-        error: "Initial grades cannot be submitted after final grades",
-      });
-    }
-
     // Get first sheet
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
@@ -70,6 +57,20 @@ const processInitialGradesFile = async (req, res) => {
     );
     if (validationError) {
       return res.status(400).json({ error: validationError });
+    }
+
+    // First check if final grades exist
+    const grades = await CourseGrades.findOne({
+      instructorId: req.user.id,
+      courseName,
+      term,
+      status: "closed",
+    });
+
+    if (grades) {
+      return res.status(400).json({
+        error: "Initial grades cannot be submitted after final grades",
+      });
     }
 
     // Prepare student grades
@@ -173,6 +174,24 @@ const processFinalGradesFile = async (req, res) => {
       });
     }
 
+    // Get first sheet
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    // Convert to JSON
+    const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+
+    // Validate Excel structure
+    const validationError = validateExcelStructure(
+      data,
+      courseName,
+      term,
+      numberOfGrades
+    );
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
+    }
+
     // First check if final grades exist
     const finalGrades = await CourseGrades.findOne({
       instructorId: req.user.id,
@@ -199,24 +218,6 @@ const processFinalGradesFile = async (req, res) => {
       return res.status(400).json({
         error: "Initial grades must be submitted before final grades",
       });
-    }
-
-    // Get first sheet
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-
-    // Convert to JSON
-    const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
-
-    // Validate Excel structure
-    const validationError = validateExcelStructure(
-      data,
-      courseName,
-      term,
-      numberOfGrades
-    );
-    if (validationError) {
-      return res.status(400).json({ error: validationError });
     }
 
     // Prepare student grades

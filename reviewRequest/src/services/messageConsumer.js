@@ -77,18 +77,49 @@ const setupConsumer = async () => {
   }
 };
 
-// This function would be different for each microservice
 const processGradesData = async (gradesData) => {
   // Example implementation for "View Grade Statistics" service
   try {
-    // Upsert operation - update if exists, insert if not
+    // First, get the existing document to access current reviewRequests
+    const existingGrades = await CourseGradesReview.findOne({
+      instructorId: gradesData.instructorId,
+      courseName: gradesData.courseName,
+      term: gradesData.term,
+    });
+
+    let updatedData = gradesData;
+
+    // If document exists and has student grades with review requests
+    if (existingGrades && existingGrades.studentGrades?.length > 0) {
+      // Create a map of existing review requests by studentId for quick lookup
+      const existingReviewRequests = {};
+      existingGrades.studentGrades.forEach((student) => {
+        if (student.reviewRequests) {
+          existingReviewRequests[student.studentId] = student.reviewRequests;
+        }
+      });
+
+      // Preserve the existing reviewRequests for each student
+      updatedData.studentGrades = gradesData.studentGrades.map((student) => {
+        // If this student has existing review requests, keep them
+        if (existingReviewRequests[student.studentId]) {
+          return {
+            ...student,
+            reviewRequests: existingReviewRequests[student.studentId],
+          };
+        }
+        return student;
+      });
+    }
+
+    // Perform the update with the modified data
     await CourseGradesReview.findOneAndUpdate(
       {
         instructorId: gradesData.instructorId,
         courseName: gradesData.courseName,
         term: gradesData.term,
       },
-      gradesData,
+      updatedData,
       { upsert: true, new: true }
     );
 

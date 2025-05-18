@@ -94,7 +94,6 @@ const ReviewManagement = () => {
         setSubmitSuccess(true);
         setSelectedRequest(null);
         setResponse("");
-
         // Reset success message after 3 seconds
         setTimeout(() => {
           setSubmitSuccess(false);
