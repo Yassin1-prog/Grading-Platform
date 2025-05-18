@@ -36,6 +36,7 @@ const getStatistics = async (req, res, next) => {
         term: course.term,
         inititalSubmissionDate: course.initialSubmissionDate,
         finalSubmissionDate: course.finalSubmissionDate,
+        status: course.status,
         totalGradeDistribution,
         questionDistributions,
       };

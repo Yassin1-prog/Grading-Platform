@@ -12,4 +12,7 @@ router.post("/login", userController.login);
 // Get current user profile
 router.get("/me", verifyToken, userController.getCurrentUser);
 
+// get all students details
+router.get("/users", verifyToken, userController.getAllStudents);
+
 module.exports = router;

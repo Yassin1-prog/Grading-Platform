@@ -173,7 +173,21 @@ const processFinalGradesFile = async (req, res) => {
       });
     }
 
-    // First check if initial grades exist
+    // First check if final grades exist
+    const finalGrades = await CourseGrades.findOne({
+      instructorId: req.user.id,
+      courseName,
+      term,
+      status: "closed",
+    });
+
+    if (finalGrades) {
+      return res.status(400).json({
+        error: "Final grades have arleady been submitted",
+      });
+    }
+
+    // Second check if initial grades exist
     const initialGrades = await CourseGrades.findOne({
       instructorId: req.user.id,
       courseName,

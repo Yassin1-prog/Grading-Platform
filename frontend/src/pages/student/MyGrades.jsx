@@ -1,62 +1,98 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { mockData } from "../../mockData";
-import { useAuth } from "../../context/useAuth";
+import { coursesAPI } from "../../services/api";
 import GradeDistributionCharts from "../../components/GradeDistributionCharts";
 
 const MyGrades = () => {
-  const { currentUser } = useAuth();
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStudentCourses = async () => {
       try {
-        if (currentUser && currentUser.studentId) {
-          const studentCourses = mockData.getStudentCourses(
-            currentUser.studentId
-          );
-          setCourses(studentCourses);
+        setLoading(true);
+        const response = await coursesAPI.getStudentCourses();
 
-          if (studentCourses.length > 0) {
-            // Get full course details for the first course
-            const courseDetails = mockData.getCourseById(
-              studentCourses[0].courseId
-            );
-            setSelectedCourse({
-              ...courseDetails,
-              studentGrade: courseDetails.studentGrades.find(
-                (grade) => grade.studentId === currentUser.studentId
-              ),
-            });
-          }
+        // Format the data to match our component expectations
+        const formattedCourses = response.grades.map((course) => ({
+          courseId: `${course.courseName}-${course.term}`, // Create a unique ID
+          courseName: course.courseName,
+          term: course.term,
+          status: course.status === "closed",
+          totalGrade: course.totalGrade,
+          gradeByQuestion: course.gradeByQuestion,
+          gradeDistribution: {
+            totalGradeDistribution: course.totalGradeDistribution,
+            questionDistributions: course.questionDistributions,
+          },
+        }));
+
+        setCourses(formattedCourses);
+
+        if (formattedCourses.length > 0) {
+          setSelectedCourse({
+            _id: formattedCourses[0].courseId,
+            courseName: formattedCourses[0].courseName,
+            term: formattedCourses[0].term,
+            status: formattedCourses[0].status,
+            gradeDistribution: formattedCourses[0].gradeDistribution,
+            studentGrade: {
+              totalGrade: formattedCourses[0].totalGrade,
+              gradeByQuestion: formattedCourses[0].gradeByQuestion,
+            },
+          });
         }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching student courses:", error);
+
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching student courses:", err);
+        setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchStudentCourses();
-  }, [currentUser]);
+  }, []);
 
   const handleSelectCourse = (courseId) => {
-    const courseDetails = mockData.getCourseById(courseId);
-    setSelectedCourse({
-      ...courseDetails,
-      studentGrade: courseDetails.studentGrades.find(
-        (grade) => grade.studentId === currentUser.studentId
-      ),
-    });
+    const course = courses.find((c) => c.courseId === courseId);
+    if (course) {
+      setSelectedCourse({
+        _id: course.courseId,
+        courseName: course.courseName,
+        term: course.term,
+        status: course.status,
+        gradeDistribution: course.gradeDistribution,
+        studentGrade: {
+          totalGrade: course.totalGrade,
+          gradeByQuestion: course.gradeByQuestion,
+        },
+      });
+    }
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <div className="text-red-600 mb-4">{error}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

@@ -1,41 +1,59 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { mockData } from "../../mockData";
 import { useAuth } from "../../context/useAuth";
+import { reviewRequestsAPI } from "../../services/api";
 
 const ReviewRequest = () => {
   const { currentUser } = useAuth();
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedTerm, setSelectedTerm] = useState("");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [reviewRequests, setReviewRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (currentUser && currentUser.studentId) {
-          // Get student's courses
-          const studentCourses = mockData.getStudentCourses(
-            currentUser.studentId
-          );
-          // Filter to only include courses that are still open for review
-          const openCourses = studentCourses.filter((course) => course.status);
-          setCourses(openCourses);
+        setLoading(true);
 
-          // Get student's review requests
-          const requests = mockData.getStudentReviewRequests(
-            currentUser.studentId
-          );
+        // Get student's courses
+        const coursesResponse = await reviewRequestsAPI.getStudentCourses();
 
-          setReviewRequests(requests);
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        // Format courses for dropdown
+        const uniqueCourses = new Set();
+        const courseTermPairs = [];
+
+        coursesResponse.courses.forEach((course) => {
+          if (course.status !== "closed") {
+            // Only include open courses
+            const key = `${course.courseName}|${course.term}`;
+            if (!uniqueCourses.has(key)) {
+              uniqueCourses.add(key);
+              courseTermPairs.push({
+                courseName: course.courseName,
+                term: course.term,
+              });
+            }
+          }
+        });
+
+        setCourses(courseTermPairs);
+
+        // Get student's review requests
+        const requestsResponse =
+          await reviewRequestsAPI.getStudentReviewRequests();
+        setReviewRequests(requestsResponse.data || []);
+
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
+      } finally {
         setLoading(false);
       }
     };
@@ -43,31 +61,46 @@ const ReviewRequest = () => {
     fetchData();
   }, [currentUser, submitSuccess]);
 
+  const handleCourseChange = (e) => {
+    const value = e.target.value;
+    if (value) {
+      const [courseName, term] = value.split("|");
+      setSelectedCourse(courseName);
+      setSelectedTerm(term);
+    } else {
+      setSelectedCourse("");
+      setSelectedTerm("");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedCourse || !comment) return;
+    if (!selectedCourse || !selectedTerm || !comment) return;
 
     setSubmitting(true);
+    setError(null);
+
     try {
-      // In a real app, this would be an API call
-      const result = mockData.submitReviewRequest(
-        currentUser.studentId,
-        selectedCourse,
-        comment
-      );
+      const requestData = {
+        courseName: selectedCourse,
+        term: selectedTerm,
+        studentId: currentUser.studentId,
+        comment,
+      };
+
+      const result = await reviewRequestsAPI.submitReviewRequest(requestData);
 
       if (result.success) {
         setSubmitSuccess(true);
         setSelectedCourse("");
+        setSelectedTerm("");
         setComment("");
-
-        // Reset success message after 3 seconds
-        setTimeout(() => {
-          setSubmitSuccess(false);
-        }, 3000);
+      } else {
+        setError(result.message || "Failed to submit review request");
       }
-    } catch (error) {
-      console.error("Error submitting review request:", error);
+    } catch (err) {
+      console.error("Error submitting review request:", err);
+      setError(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -116,6 +149,29 @@ const ReviewRequest = () => {
         </p>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-red-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         <h2 className="text-lg font-medium mb-4">Submit New Request</h2>
         <form onSubmit={handleSubmit}>
@@ -129,13 +185,20 @@ const ReviewRequest = () => {
             <select
               id="course"
               className="form-input"
-              value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
+              value={
+                selectedCourse && selectedTerm
+                  ? `${selectedCourse}|${selectedTerm}`
+                  : ""
+              }
+              onChange={handleCourseChange}
               required
             >
               <option value="">Select a course</option>
-              {courses.map((course) => (
-                <option key={course.courseId} value={course.courseId}>
+              {courses.map((course, index) => (
+                <option
+                  key={index}
+                  value={`${course.courseName}|${course.term}`}
+                >
                   {course.courseName} - {course.term}
                 </option>
               ))}
@@ -162,7 +225,9 @@ const ReviewRequest = () => {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting || !selectedCourse || !comment}
+              disabled={
+                submitting || !selectedCourse || !selectedTerm || !comment
+              }
             >
               {submitting ? "Submitting..." : "Submit Request"}
             </button>
@@ -190,26 +255,27 @@ const ReviewRequest = () => {
                       Grade: {request.totalGrade}/10
                     </p>
                   </div>
-                  <div>{getStatusBadge(request.requestStatus)}</div>
+                  <div>{getStatusBadge(request.request.status)}</div>
                 </div>
                 <div className="mt-3">
                   <p className="text-sm font-medium text-gray-700">
                     Your Comment:
                   </p>
                   <p className="text-sm mt-1 bg-gray-50 p-2 rounded">
-                    {request.comment}
+                    {request.request.comment}
                   </p>
                 </div>
-                {request.requestStatus !== "pending" && (
-                  <div className="mt-3">
-                    <p className="text-sm font-medium text-gray-700">
-                      Instructor Response:
-                    </p>
-                    <p className="text-sm mt-1 bg-gray-50 p-2 rounded">
-                      {request.response}
-                    </p>
-                  </div>
-                )}
+                {request.request.status !== "pending" &&
+                  request.request.response && (
+                    <div className="mt-3">
+                      <p className="text-sm font-medium text-gray-700">
+                        Instructor Response:
+                      </p>
+                      <p className="text-sm mt-1 bg-gray-50 p-2 rounded">
+                        {request.request.response}
+                      </p>
+                    </div>
+                  )}
               </div>
             ))}
           </div>

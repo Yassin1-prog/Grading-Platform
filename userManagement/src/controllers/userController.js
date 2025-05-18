@@ -61,18 +61,18 @@ exports.register = async (req, res) => {
 // Login user
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     // Validate input
-    if (!email || !password) {
+    if (!username || !password) {
       return res.status(400).json({
         success: false,
         message: "Please provide email and password",
       });
     }
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by username
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -149,6 +149,37 @@ exports.getCurrentUser = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+// ...existing code...
+
+// Get all student users
+exports.getAllStudents = async (req, res) => {
+  try {
+    const students = await User.find({ role: "student" })
+      .select("-password")
+      .sort({ lastName: 1, firstName: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: students.length,
+      data: students.map((student) => ({
+        id: student._id,
+        username: student.username,
+        email: student.email,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        studentId: student.studentId,
+      })),
+    });
+  } catch (error) {
+    console.error("Get all students error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error while fetching students",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }

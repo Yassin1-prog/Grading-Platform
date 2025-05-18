@@ -1,65 +1,76 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { mockData } from "../mockData";
-import { useAuth } from "../context/useAuth";
+import { coursesAPI } from "../services/api";
 import CourseTable from "../components/CourseTable";
 import GradeDistributionCharts from "../components/GradeDistributionCharts";
 
 const Dashboard = () => {
-  const { currentUser } = useAuth();
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [studentGrade, setStudentGrade] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch all courses
     const fetchCourses = async () => {
       try {
-        const allCourses = mockData.getAllCourses();
-        setCourses(allCourses);
+        setLoading(true);
+        const response = await coursesAPI.getAllCourses();
 
-        if (allCourses.length > 0) {
-          setSelectedCourse(allCourses[0]);
+        // Format the data to match our component expectations
+        const formattedCourses = response.grades.map((course) => ({
+          _id: `${course.courseName}-${course.term}`, // Create a unique ID
+          courseName: course.courseName,
+          term: course.term,
+          initialSubmissionDate: course.inititalSubmissionDate,
+          finalSubmissionDate: course.finalSubmissionDate,
+          status: course.status === "closed",
+          gradeDistribution: {
+            totalGradeDistribution: course.totalGradeDistribution,
+            questionDistributions: course.questionDistributions,
+          },
+        }));
 
-          // If user is a student, get their grade for the selected course
-          if (currentUser.role === "student") {
-            const courseDetails = mockData.getCourseById(allCourses[0]._id);
-            const studentGradeInfo = courseDetails.studentGrades.find(
-              (grade) => grade.studentId === currentUser.studentId
-            );
-            setStudentGrade(studentGradeInfo || null);
-          }
+        setCourses(formattedCourses);
+
+        if (formattedCourses.length > 0) {
+          setSelectedCourse(formattedCourses[0]);
         }
 
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+        setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchCourses();
-  }, [currentUser]);
+  }, []);
 
-  const handleSelectCourse = async (course) => {
+  const handleSelectCourse = (course) => {
     setSelectedCourse(course);
-
-    // If user is a student, get their grade for the selected course
-    if (currentUser.role === "student") {
-      const courseDetails = mockData.getCourseById(course._id);
-      const studentGradeInfo = courseDetails.studentGrades.find(
-        (grade) => grade.studentId === currentUser.studentId
-      );
-      setStudentGrade(studentGradeInfo || null);
-    }
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <div className="text-red-600 mb-4">{error}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
@@ -83,7 +94,6 @@ const Dashboard = () => {
           </h2>
           <GradeDistributionCharts
             gradeDistribution={selectedCourse.gradeDistribution}
-            studentGrade={studentGrade}
           />
         </div>
       )}
