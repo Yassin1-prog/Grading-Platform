@@ -1,0 +1,161 @@
+services:
+  js-replyreviewrequest:
+    build:
+      context: ./ReplyReviewRequest
+    container_name: js-replyreviewrequest
+    restart: unless-stopped
+    init: true
+    env_file: ./ReplyReviewRequest/.env
+    ports:
+      - "8086:8086"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-reviewrequest:
+    build:
+      context: ./ReviewRequest
+    container_name: js-reviewrequest
+    restart: unless-stopped
+    init: true
+    env_file: ./ReviewRequest/.env
+    ports:
+      - "8085:8085"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-viewgradestatistics:
+    build:
+      context: ./ViewGradeStatistics
+    container_name: js-viewgradestatistics
+    restart: unless-stopped
+    init: true
+    env_file: ./ViewGradeStatistics/.env
+    ports:
+      - "8087:8087"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-viewpersonalgrades:
+    build:
+      context: ./ViewPersonalGrades
+    container_name: js-viewpersonalgrades
+    restart: unless-stopped
+    init: true
+    env_file: ./ViewPersonalGrades/.env
+    ports:
+      - "8088:8088"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-frontend:
+    build:
+      context: ./frontend
+    container_name: js-frontend
+    restart: unless-stopped
+    init: true
+    ports:
+      - "4173:4173"
+    networks:
+      - frontend
+    depends_on:
+      - js-gateway
+
+  js-gateway:
+    build:
+      context: ./gateway
+    container_name: js-gateway
+    restart: unless-stopped
+    init: true
+    ports:
+      - "8080:8080"
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - js-replyreviewrequest
+      - js-reviewrequest
+      - js-viewgradestatistics
+      - js-viewpersonalgrades
+      - js-postgrades
+      - js-usermanagement
+
+  js-postgrades:
+    build:
+      context: ./postGrades
+    container_name: js-postgrades
+    restart: unless-stopped
+    init: true
+    env_file: ./postGrades/.env
+    ports:
+      - "8082:8082"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-usermanagement:
+    build:
+      context: ./userManagement
+    container_name: js-usermanagement
+    restart: unless-stopped
+    init: true
+    env_file: ./userManagement/.env
+    ports:
+      - "8081:8081"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672" # AMQP protocol
+      - "15672:15672" # Management UI
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mongo-data:/data/db
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  rabbitmq-data:
+    driver: local
+  mongo-data:
+    driver: local
