@@ -16,7 +16,7 @@
 - Αρχεία περιβάλλοντος (.env) για τα services που το απαιτούν (π.χ. `ReplyReviewRequest/.env`, `ReviewRequest/.env`, `userManagement/.env`)
 
 ### Περιβάλλοντα (Environment Variables)
-- Τα αρχεία `.env` πρέπει να υπάρχουν στους αντίστοιχους φακέλους των υπηρεσιών που τα απαιτούν, όπως ορίζεται στο `docker-compose.yml` (π.χ. `ReplyReviewRequest/.env`, `ReviewRequest/.env`, `userManagement/.env`, `ViewGradeStatistics/.env`, `ViewPersonalGrades/.env`, `postGrades/.env`).
+- Τα αρχεία `.env` πρέπει να υπάρχουν στους αντίστοιχους φακέλους των υπηρεσιών που τα απαιτούν, όπως ορίζεται στο `docker-compose.yml` (π.χ. `ReplyReviewRequest/.env`, `ReviewRequest/.env`, `userManagement/.env`).
 - Για τα services χωρίς `.env`, δεν απαιτείται επιπλέον ρύθμιση.
 
 ### Build & Run
@@ -42,8 +42,5 @@
 - Όλα τα services τρέχουν ως non-root χρήστες για λόγους ασφάλειας.
 - Τα services επικοινωνούν μεταξύ τους μέσω των δικτύων `frontend` και `backend` που ορίζονται στο compose file.
 - RabbitMQ χρησιμοποιεί persistent volume (`rabbitmq-data`) για αποθήκευση δεδομένων.
-- Όλα τα Node.js services χρησιμοποιούν την έκδοση 22.13.1 (ορίζεται ως ARG στα Dockerfiles).
-- Το frontend χτίζεται με Vite και σερβίρεται μέσω `npx vite preview` στο port 4173.
-- Για αλλαγές σε περιβάλλον ή εξαρτήσεις, επαναλάβετε το build (`docker compose up --build`).
 
 Για οποιαδήποτε αλλαγή σε περιβάλλον ή εξαρτήσεις, επαναλάβετε το build (`docker compose up --build`).

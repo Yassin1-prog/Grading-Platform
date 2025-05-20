@@ -30,12 +30,12 @@ const authenticate = (req, res, next) => {
 };
 */
 
-const users = proxy("http://localhost:8081");
-const postGrades = proxy("http://localhost:8082");
-const reviewRequests = proxy("http://localhost:8085");
-const replyReviewRequests = proxy("http://localhost:8086");
-const allCourses = proxy("http://localhost:8087");
-const personalCourses = proxy("http://localhost:8088");
+const users = proxy("http://js-usermanagement:8081");
+const postGrades = proxy("http://js-postgrades:8082");
+const reviewRequests = proxy("http://js-reviewrequest:8085");
+const replyReviewRequests = proxy("http://js-replyreviewrequest:8086");
+const allCourses = proxy("http://js-viewgradestatistics:8087");
+const personalCourses = proxy("http://js-viewpersonalgrades:8088");
 
 // Rate limiting middleware
 const limiter = rateLimit({

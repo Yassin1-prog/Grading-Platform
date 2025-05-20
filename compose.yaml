@@ -1,0 +1,179 @@
+services:
+  js-replyreviewrequest:
+    build:
+      context: ./ReplyReviewRequest
+    volumes:
+      - ./ReplyReviewRequest/src:/app/src # Mount source code
+      - ./ReplyReviewRequest/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
+    container_name: js-replyreviewrequest
+    restart: unless-stopped
+    init: true
+    env_file: ./ReplyReviewRequest/.env
+    ports:
+      - "8086:8086"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-reviewrequest:
+    build:
+      context: ./reviewRequest
+    volumes:
+      - ./reviewRequest/src:/app/src # Mount source code
+      - ./reviewRequest/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
+    container_name: js-reviewrequest
+    restart: unless-stopped
+    init: true
+    env_file: ./reviewRequest/.env
+    ports:
+      - "8085:8085"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-viewgradestatistics:
+    build:
+      context: ./ViewGradeStatistics
+    volumes:
+      - ./ViewGradeStatistics/src:/app/src # Mount source code
+      - ./ViewGradeStatistics/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
+    container_name: js-viewgradestatistics
+    restart: unless-stopped
+    init: true
+    env_file: ./ViewGradeStatistics/.env
+    ports:
+      - "8087:8087"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-viewpersonalgrades:
+    build:
+      context: ./ViewPersonalGrades
+    volumes:
+      - ./ViewPersonalGrades/src:/app/src # Mount source code
+      - ./ViewPersonalGrades/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
+    container_name: js-viewpersonalgrades
+    restart: unless-stopped
+    init: true
+    env_file: ./ViewPersonalGrades/.env
+    ports:
+      - "8088:8088"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-frontend:
+    build:
+      context: ./frontend
+    container_name: js-frontend
+    restart: unless-stopped
+    init: true
+    ports:
+      - "5173:5173" # Vite dev server port
+    networks:
+      - frontend
+    depends_on:
+      - js-gateway
+
+  js-gateway:
+    build:
+      context: ./gateway
+    container_name: js-gateway
+    restart: unless-stopped
+    init: true
+    ports:
+      - "8080:8080"
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - js-replyreviewrequest
+      - js-reviewrequest
+      - js-viewgradestatistics
+      - js-viewpersonalgrades
+      - js-postgrades
+      - js-usermanagement
+
+  js-postgrades:
+    build:
+      context: ./postGrades
+    volumes:
+      - ./postGrades/src:/app/src # Mount source code
+      - ./postGrades/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
+    container_name: js-postgrades
+    restart: unless-stopped
+    init: true
+    env_file: ./postGrades/.env
+    ports:
+      - "8082:8082"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  js-usermanagement:
+    build:
+      context: ./userManagement
+    volumes:
+      - ./userManagement/src:/app/src # Mount source code
+      - ./userManagement/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
+    container_name: js-usermanagement
+    restart: unless-stopped
+    init: true
+    env_file: ./userManagement/.env
+    ports:
+      - "8081:8081"
+    networks:
+      - backend
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672" # AMQP protocol
+      - "15672:15672" # Management UI
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  rabbitmq-data:
+    driver: local

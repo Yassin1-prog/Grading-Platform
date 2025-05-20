@@ -1,0 +1,109 @@
+# Node.js dependencies
+node_modules/
+
+# Logs and debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Environment and secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+
+# Version control
+.git/
+.gitignore
+.svn/
+.hg/
+
+# IDE/editor config
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build and output directories
+dist/
+build/
+out/
+tmp/
+temp/
+
+# Test and coverage artifacts
+test/
+tests/
+coverage/
+.pytest_cache/
+*.test.js
+*.spec.js
+
+# Python cache (in case of mixed projects)
+__pycache__/
+*.pyc
+*.pyo
+
+# Go cache (in case of mixed projects)
+.go-cache/
+
+# Java build (in case of mixed projects)
+target/
+*.class
+.gradle/
+
+# Documentation and markdown
+# README* -yasiiiin
+# *.md     why are these 2 here? the dockerfile in microservices uses them
+docs/
+
+# Docker files
+Dockerfile*
+docker-compose*
+
+# Temporary and local files
+*.tmp
+.local/
+local/
+
+# Project-specific: Excel data files (if not needed in image)
+*.xlsx
+
+# Project-specific: Example files
+*.example
+
+# Project-specific: Architecture diagrams
+*.vpp
+
+# Exclude top-level node_modules
+/node_modules/
+
+# Exclude node_modules in each service
+/ReplyReviewRequest/node_modules/
+/ReviewRequest/node_modules/
+/ViewGradeStatistics/node_modules/
+/ViewPersonalGrades/node_modules/
+/frontend/node_modules/
+/userManagement/node_modules/
+
+# Exclude data files in postGrades if not needed
+postGrades/data/
+
+# Exclude architecture directory
+architecture/
+
+# Exclude ai-log directory
+ai-log/
+
+# Exclude microservice placeholder directories
+microservice08/
+microservice09/
+microservice10/
+microservice11/
+microservice12/
+microservice13/
+microservice14/
+microservice15/

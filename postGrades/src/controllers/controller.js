@@ -216,7 +216,8 @@ const processFinalGradesFile = async (req, res) => {
 
     if (!initialGrades) {
       return res.status(400).json({
-        error: "Initial grades must be submitted before final grades",
+        error:
+          "Initial grades must be submitted before final grades (by the same instructor)",
       });
     }
 
