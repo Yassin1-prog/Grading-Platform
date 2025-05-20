@@ -15,11 +15,11 @@ services:
 
   js-reviewrequest:
     build:
-      context: ./ReviewRequest
+      context: ./reviewRequest
     container_name: js-reviewrequest
     restart: unless-stopped
     init: true
-    env_file: ./ReviewRequest/.env
+    env_file: ./reviewRequest/.env
     ports:
       - "8085:8085"
     networks:
@@ -125,7 +125,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -141,7 +141,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5

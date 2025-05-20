@@ -56,8 +56,8 @@ target/
 .gradle/
 
 # Documentation and markdown
-README*
-*.md
+# README* -yasiiiin
+# *.md     why are these 2 here? the dockerfile in microservices uses them
 docs/
 
 # Docker files
