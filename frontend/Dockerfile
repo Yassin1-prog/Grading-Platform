@@ -35,6 +35,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 USER appuser
 
-EXPOSE 4173
+EXPOSE 5173
 
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "4173"]
+#CMD ["npm", "run", "dev", "--host", "0.0.0.0", "--port", "5173"]
+CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "5173"]

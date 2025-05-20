@@ -25,4 +25,4 @@ USER appuser
 EXPOSE 8081
 
 # Start the application
-CMD ["node", "src/app.js"]
+CMD ["node", "--watch", "src/app.js"]

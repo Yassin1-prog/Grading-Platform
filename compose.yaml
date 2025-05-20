@@ -2,6 +2,12 @@ services:
   js-replyreviewrequest:
     build:
       context: ./ReplyReviewRequest
+    volumes:
+      - ./ReplyReviewRequest/src:/app/src # Mount source code
+      - ./ReplyReviewRequest/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
     container_name: js-replyreviewrequest
     restart: unless-stopped
     init: true
@@ -16,6 +22,12 @@ services:
   js-reviewrequest:
     build:
       context: ./reviewRequest
+    volumes:
+      - ./reviewRequest/src:/app/src # Mount source code
+      - ./reviewRequest/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
     container_name: js-reviewrequest
     restart: unless-stopped
     init: true
@@ -30,6 +42,12 @@ services:
   js-viewgradestatistics:
     build:
       context: ./ViewGradeStatistics
+    volumes:
+      - ./ViewGradeStatistics/src:/app/src # Mount source code
+      - ./ViewGradeStatistics/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
     container_name: js-viewgradestatistics
     restart: unless-stopped
     init: true
@@ -44,6 +62,12 @@ services:
   js-viewpersonalgrades:
     build:
       context: ./ViewPersonalGrades
+    volumes:
+      - ./ViewPersonalGrades/src:/app/src # Mount source code
+      - ./ViewPersonalGrades/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
     container_name: js-viewpersonalgrades
     restart: unless-stopped
     init: true
@@ -62,7 +86,7 @@ services:
     restart: unless-stopped
     init: true
     ports:
-      - "4173:4173"
+      - "5173:5173" # Vite dev server port
     networks:
       - frontend
     depends_on:
@@ -90,6 +114,12 @@ services:
   js-postgrades:
     build:
       context: ./postGrades
+    volumes:
+      - ./postGrades/src:/app/src # Mount source code
+      - ./postGrades/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
     container_name: js-postgrades
     restart: unless-stopped
     init: true
@@ -104,6 +134,12 @@ services:
   js-usermanagement:
     build:
       context: ./userManagement
+    volumes:
+      - ./userManagement/src:/app/src # Mount source code
+      - ./userManagement/package.json:/app/package.json # Sync package.json
+      - /app/node_modules # Keep container's node_modules isolated
+    environment:
+      - NODE_ENV=development # Enable dev mode
     container_name: js-usermanagement
     restart: unless-stopped
     init: true
@@ -132,22 +168,6 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
-  mongo:
-    image: mongo:6.0
-    container_name: mongo
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - mongo-data:/data/db
-
 networks:
   frontend:
     driver: bridge
@@ -156,6 +176,4 @@ networks:
 
 volumes:
   rabbitmq-data:
-    driver: local
-  mongo-data:
     driver: local

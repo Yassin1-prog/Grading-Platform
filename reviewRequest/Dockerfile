@@ -23,4 +23,4 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 EXPOSE 8085
 
-CMD ["npm", "start"]
+CMD ["node", "--watch", "src/app.js"]

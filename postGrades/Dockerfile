@@ -25,4 +25,4 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 EXPOSE 8082
 
 # Start the service
-CMD ["node", "src/app.js"]
+CMD ["node", "--watch", "src/app.js"]

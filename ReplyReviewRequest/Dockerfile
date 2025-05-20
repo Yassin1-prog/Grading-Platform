@@ -25,4 +25,4 @@ USER appuser
 
 EXPOSE 8086
 
-CMD ["npm", "start"]
+CMD ["node", "--watch", "src/app.js"]
