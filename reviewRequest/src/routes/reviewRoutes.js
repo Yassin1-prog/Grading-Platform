@@ -17,4 +17,7 @@ router.get(
   reviewController.getMyReviewRequests
 );
 
+//get list of courses
+router.get("/my-courses", verifyToken, reviewController.getPersonalCourses);
+
 module.exports = router;

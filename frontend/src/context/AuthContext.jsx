@@ -1,38 +1,56 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "./useAuth";
-import { mockData } from "../mockData";
+import { authAPI } from "../services/api";
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+    // Check if user is stored in localStorage
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+
+    if (token && user) {
+      setCurrentUser(JSON.parse(user));
     }
     setLoading(false);
   }, []);
 
-  const login = (username, password) => {
-    const user = mockData.getCurrentUser(username);
-    if (user && user.password === password) {
-      setCurrentUser(user);
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      return true;
+  const login = async (username, password) => {
+    try {
+      setError(null);
+      const response = await authAPI.login(username, password);
+
+      if (response.success) {
+        const { token, user } = response;
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        setCurrentUser(user);
+        return { success: true };
+      } else {
+        setError(response.message || "Login failed");
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      const errorMessage = error.message || "Login failed";
+      setError(errorMessage);
+      return { success: false, message: errorMessage };
     }
-    return false;
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setCurrentUser(null);
-    localStorage.removeItem("currentUser");
   };
 
   const value = {
     currentUser,
     login,
     logout,
+    error,
     isAuthenticated: !!currentUser,
     isStudent: currentUser?.role === "student",
     isInstructor: currentUser?.role === "instructor",

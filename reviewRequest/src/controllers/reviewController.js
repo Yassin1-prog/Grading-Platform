@@ -117,3 +117,29 @@ exports.getMyReviewRequests = async (req, res) => {
     });
   }
 };
+
+// get my courses
+exports.getPersonalCourses = async (req, res, next) => {
+  try {
+    const studentId = req.user.studentId;
+
+    const courses = await CourseGradesReview.find({
+      "studentGrades.studentId": studentId,
+    });
+
+    const personalCourses = courses.map((course) => {
+      return {
+        courseName: course.courseName,
+        term: course.term,
+        status: course.status,
+      };
+    });
+
+    res.json({
+      studentId,
+      courses: personalCourses,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
