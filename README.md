@@ -4,19 +4,18 @@
 
 **clearSKY** is a microservices-based SaaS platform designed to assist educational institutions and students with grade management, review workflows, and statistical insights. It allows instructors to upload and finalize grades, and students to view grades, request reviews, and monitor performance. The application is deployed using Docker containers and includes both backend services and a React-based frontend.
 
-
 The system follows a **microservices architecture**, and includes the following core components:
 
 ### 🛠 Backend Microservices
 
-| Service                | Description                                                                 |
-|------------------------|-----------------------------------------------------------------------------|
-| `User Management`      | Registers and authenticates users, issues JWTs, and manages student info    |
-| `Post Grades`          | Allows instructors to upload initial and final grades via Excel             |
-| `View Personal Grades` | Enables students to view their personal grades and distributions            |
-| `View Grade Statistics`| Returns aggregated grade statistics per course (total & per-question)       |
-| `Review Request`       | Allows students to submit grade review requests                             |
-| `Reply Review Request` | Allows instructors to respond to pending review requests                    |
+| Service                 | Description                                                              |
+| ----------------------- | ------------------------------------------------------------------------ |
+| `User Management`       | Registers and authenticates users, issues JWTs, and manages student info |
+| `Post Grades`           | Allows instructors to upload initial and final grades via Excel          |
+| `View Personal Grades`  | Enables students to view their personal grades and distributions         |
+| `View Grade Statistics` | Returns aggregated grade statistics per course (total & per-question)    |
+| `Review Request`        | Allows students to submit grade review requests                          |
+| `Reply Review Request`  | Allows instructors to respond to pending review requests                 |
 
 ### 🌐 Frontend
 
@@ -59,7 +58,7 @@ Provided in the [`clearSKY.vpp`](./architecture/clearSKY.vpp) file and includes:
 
 ---
 
-## 🧰 Technologies Used
+## 👩🏻‍💻 Technologies Used
 
 - **Node.js**, **Express.js**
 - **MongoDB** with Mongoose ODM
@@ -89,3 +88,4 @@ cd clearsky-saas
 
 # Start all services
 docker-compose up --build
+```
