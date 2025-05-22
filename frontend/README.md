@@ -2,7 +2,7 @@
 
 A modern, responsive web application for managing academic grades, review requests, and course statistics.
 
-![Grading System Dashboard](https://placeholder.com/grading-system-dashboard.png)
+![Grading System Dashboard](👨‍🎓)
 
 ## Overview
 
@@ -40,7 +40,7 @@ This Academic Grading System provides a comprehensive platform for instructors a
 
 ## Project Structure
 
-\`\`\`
+```
 grading-system/
 ├── public/ # Static files
 ├── src/
@@ -58,7 +58,7 @@ grading-system/
 ├── package.json
 ├── tailwind.config.js
 └── vite.config.js
-\`\`\`
+```
 
 ## Installation
 
@@ -70,46 +70,51 @@ grading-system/
 ### Setup
 
 1. Clone the repository:
-   \`\`\`bash
+
+   ```
    git clone https://github.com/yourusername/grading-system.git
    cd grading-system
-   \`\`\`
+   ```
 
 2. Install dependencies:
-   \`\`\`bash
+
+   ```
    npm install
 
-   # or
+   > or
 
    yarn install
-   \`\`\`
+   ```
 
 3. Create a `.env` file in the root directory with the following content:
-   \`\`\`
+
+   ```
    VITE_API_URL=http://localhost:8080
-   \`\`\`
+   ```
+
    Replace the URL with your backend API URL.
 
 4. Start the development server:
-   \`\`\`bash
+
+   ```
    npm run dev
 
-   # or
+   > or
 
    yarn dev
-   \`\`\`
+   ```
 
 5. Open your browser and navigate to `http://localhost:5173`
 
 ## Building for Production
 
-\`\`\`bash
+```
 npm run build
 
-# or
+> or
 
 yarn build
-\`\`\`
+```
 
 The build artifacts will be stored in the `dist/` directory.
 
@@ -188,4 +193,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Recharts](https://recharts.org/)
-  \`\`\`
+  ```
+
+  ```
